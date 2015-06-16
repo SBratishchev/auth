@@ -1,0 +1,35 @@
+<template name="loginForm">
+    <div class="medium-6 small-12 columns">
+        <h1>Форма входа</h1>
+
+        <form id="loginForm">
+            <div class="row">
+                <div class="medium-10 medium-centered small-12 columns">
+                    <label>
+                        Имя пользователя
+                        <input id="loginForm-name" type="text">
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="medium-10 medium-centered small-12 columns">
+                    <label>
+                        Пароль
+                        <input id="loginForm-password" type="password">
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="medium-10 medium-centered small-12 columns">
+                    {{#if isMobile}}
+                        <button type="submit" id="loginForm-mobile" class="button">Войти</button>
+                    {{else}}
+                        <button type="submit" id="loginForm-web" class="button">Войти</button>
+                    {{/if}}
+                </div>
+            </div>
+        </form>
+    </div>
+</template>

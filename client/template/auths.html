@@ -1,0 +1,18 @@
+<template name="auths">
+    <h3>List of auth</h3>
+    {{#each auths}}
+        <div class="row">
+            <div class="small-5 small-push-1 columns">
+                {{username}}
+            </div>
+            <div class="small-5 columns">
+                {{createdAt}}
+            </div>
+            <div class="small-12 text-center columns">
+                <button type="submit" class="button">Аутентифицировать</button>
+            </div>
+        </div>
+    {{/each}}
+
+    {{> renew}}
+</template>
