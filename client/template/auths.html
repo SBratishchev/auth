@@ -2,17 +2,16 @@
     <h3>List of auth</h3>
     {{#each auths}}
         <div class="row">
-            <div class="small-5 small-push-1 columns">
+            <div class="small-4 small-push-1 columns">
                 {{username}}
             </div>
-            <div class="small-5 columns">
+            <div class="small-6 columns">
                 {{createdAt}}
             </div>
-            <div class="small-12 text-center columns">
-                <button type="submit" class="button">Аутентифицировать</button>
+            <div class="small-10 small-push-1 columns">
+                {{_id}}
+                <button type="submit" class="button" data-id="{{_id}}">Аутентифицировать</button>
             </div>
         </div>
     {{/each}}
-
-    {{> renew}}
 </template>

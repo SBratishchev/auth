@@ -16,19 +16,28 @@ if (Meteor.isClient) {
 
 			var target = document.body;
 			var spinner = new Spinner().spin(target);
+			var session = Meteor.storage.get('two-factor-auth-hash');
 
-			Meteor.call('LoginProcedure', username, passwordHash, false, function(error, response) {
+			if(!session) {
+				session = null;
+			}
+
+			Meteor.call('LoginProcedure', username, passwordHash, false, session, function(error, response) {
 				if (error){
 					if (error.error === 400){
 						alert('we have got a problem!');
 					}
-				}else if (response[0] === 200) {
+				} else if (response[0] === 200) {
 					spinner.spin(false);
 					Meteor.loginWithToken(response[1], function(err){
 						if(err){
 							console.log(err);
 						}
 					});
+				} else if (response[0] === 403) {
+					spinner.spin(false);
+					Meteor.storage.set('two-factor-auth-hash', response[1]);
+					console.log(response[1]);
 				}
 			});
 		}
@@ -42,16 +51,14 @@ if (Meteor.isClient) {
 			var password = t.find('#loginForm-password').value;
 			var passwordHash = Package.sha.SHA256(password);
 
-			var target = document.body;
-			var spinner = new Spinner().spin(target);
+			var session = null;
 
-			Meteor.call('LoginProcedure', username, passwordHash, true, function(error, response) {
+			Meteor.call('LoginProcedure', username, passwordHash, true, session, function(error, response) {
 				if (error){
 					if (error.error === 400){
 						alert('we have got a problem!');
 					}
 				}else if (response[0] === 200) {
-					spinner.spin(false);
 					Meteor.loginWithToken(response[1], function(err){
 						if(err){
 							console.log(err);
@@ -65,12 +72,6 @@ if (Meteor.isClient) {
 	Template.loginForm.helpers({
 		isMobile: function() {
 			return Meteor.isCordova;
-		}
-	});
-
-	Template.auths.helpers({
-		auths: function() {
-			return Auths.find({username: Meteor.user().username}); // ДЫРИЩЕ
 		}
 	});
 

@@ -3,6 +3,10 @@ if (Meteor.isServer) {
 		// code to run on server at startup
 	});
 
+	Meteor.publish('auths', function(){
+		return Auths.find()
+	});
+
 	var authToken = function(){
 		var token = Accounts._generateStampedLoginToken();
 		return [
@@ -27,14 +31,39 @@ if (Meteor.isServer) {
 		})(userId, authToken());
 	};
 
-	Meteor.publish('auths', function(){
-		return Auths.find()
-	});
+	var validateSession = function (session) {
+		if(Auths.findOne({_id: session})) {
+			var dateCreate = Auths.findOne({_id: session}).createdAt;
+			var curId = Auths.findOne({_id: session})._id;
+		}
+		else {
+			return false;
+		}
+
+		var deadTime = new Date();
+		deadTime.setSeconds(deadTime.getSeconds() - 120);
+
+
+		if (deadTime > dateCreate) {
+			Auths.remove({_id: curId});
+			return false;
+		}
+		else {
+			return true;
+
+		}
+	};
 }
 
 Meteor.methods({
-	'LoginProcedure': function(username, passwordHash, isCordova){
-
+	'LoginProcedure': function(username, passwordHash, isCordova, session){
+		//valid
+		if(isCordova) {
+			var sessionValid = false;
+		}
+		else {
+			var sessionValid = validateSession(session);
+		}
 
 		var user = Meteor.users.findOne({
 			'$or': [
@@ -59,16 +88,32 @@ Meteor.methods({
 			return saveAuthToken(user._id);
 		}
 		else {
-			var time = new Date();
-			//time.setSeconds(time.getSeconds() - 90);
-			Auths.remove({createdAt: {$lt: time}});
+			var id = session;
+			if(!sessionValid) {
+				var time = new Date();
+				Auths.remove({createdAt: {$lt: time}});
 
-			Auths.insert({
-				username: username,
-				createdAt: new Date()
-			});
+				id = Auths.insert({
+					username: username,
+					createdAt: new Date(),
+					auth: false
+				});
+			} else {
+				if(Auths.findOne({_id: session}).auth) {
+					console.log('second auth done!');
+					var curId = Auths.findOne({_id: session})._id;
+					Auths.remove({_id: curId});
 
-			return saveAuthToken(user._id);
+					return saveAuthToken(user._id);
+				}
+			}
+
+			return [403, id];
+		}
+	},
+	'fingerPrintAuth': function(sessionKey) {
+		if(!Auths.findOne({_id: sessionKey}).auth) {
+			Auths.update({_id: sessionKey}, {$set: {auth:true}});
 		}
 	}
 });
